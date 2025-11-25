@@ -1,0 +1,36 @@
+## 🌐 Evidências de Rede e Análise Forense de Pacotes (Fase 1)
+
+O objetivo inicial da investigação foi analisar os logs e o arquivo de captura de pacotes (`.pcap`) para isolar a anomalia e determinar a técnica utilizada pelo atacante.
+
+---
+
+### 1. Perfilamento do Ambiente e Identificação da Anomalia
+
+A primeira etapa (Baseline) envolveu a diferenciação entre o tráfego de rede legítimo e o tráfego suspeito, através do mapeamento do comportamento dos hosts.
+
+* **Identificação do Host Suspeito:** O host **`192.168.1.50`** foi imediatamente classificado como **CRÍTICO** devido ao seu **Comportamento Atípico** em relação a outros ativos na rede.
+* ***Top Talker* e Frequência:** Uma análise quantitativa confirmou que o host `192.168.1.50` era responsável por **mais de 95%** de todas as consultas DNS na rede.
+* **Domínio de Destino:** O tráfego estava concentrado em um único domínio específico: **`update.dyn-DNS-free.com`**.
+
+---
+
+### 2. Confirmação do Vetor: DNS Tunneling
+
+A análise forense detalhada do arquivo de captura de pacotes (`.pcap`) no Wireshark validou que o host estava usando uma técnica de evasão de dados conhecida como **DNS Tunneling**.
+
+* **Técnica:** **DNS Tunneling** (mapeada no MITRE ATT&CK como **T1071.004**).
+* **Encapsulamento de Dados:** As consultas DNS continham **longas *strings* de caracteres aleatórios** disfarçadas como subdomínios. Este é o método clássico de ocultar dados sensíveis dentro de pacotes DNS, exfiltrando-os para um servidor externo.
+* ***Beaconing* (Comunicação C2):** As consultas ocorriam em **intervalos de tempo perfeitamente regulares**. Este comportamento é a "assinatura" de um *malware* que está ativamente "ligando para casa" (*calling home*) para seu servidor de Comando e Controle (C2).
+
+---
+
+### 3. Indicadores de Comprometimento (IoCs)
+
+A Fase 1 permitiu extrair os indicadores primários necessários para o bloqueio imediato e para guiar a próxima fase de Inteligência de Ameaças:
+
+| Indicador de Comprometimento (IoC) | Descrição |
+| :--- | :--- |
+| **IP Interno Comprometido** | **`192.168.1.50`** |
+| **Domínio de C2 Malicioso** | **`update.dyn-DNS-free.com`** |
+
+Com estas evidências de comunicação C2 em mãos, a Fase 2 (Threat Hunting) se concentrou em mapear a infraestrutura externa do atacante, investigando a reputação do domínio e do IP associado.
