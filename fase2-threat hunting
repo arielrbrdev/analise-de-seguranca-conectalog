@@ -1,0 +1,35 @@
+🔎 Caça à Ameaça (Threat Hunting / OSINT) (Fase 2)
+
+Após a confirmação do DNS Tunneling na Fase 1, esta fase focou na investigação dos Indicadores de Comprometimento (IoCs) externos para entender a infraestrutura do Comando e Controle (C2) do atacante.
+
+1. Análise de Reputação do Domínio (army-lk.org)
+
+A investigação concentrou-se no domínio army-lk.org:
+
+    Pontuação de Detecção: 8/98 fornecedores de segurança sinalizaram o domínio como malicioso no VirusTotal.
+
+Idade do Domínio (WHOIS): O domínio foi registrado recentemente, em 01 de Agosto de 2025. A baixa idade (3 meses) é típica de infraestruturas de C2 ad-hoc ou de campanhas recentes.
+
+Controle e Operacionalização: A análise de certificados TLS mostrou que o atacante precisou controlar o DNS do domínio para emitir certificados válidos, provando que o army-lk.org foi deliberadamente operacionalizado e está ativo desde pelo menos 2023 (o que reforça o IoC).
+
+Conclusão: O domínio é parte de uma infraestrutura feita sob medida e recente, justificando uma ação rápida de resposta.
+
+2. Mapeamento e Análise do IP de C2 (156.234.249.236)
+
+A investigação via AbuseIPDB, Shodan e VirusTotal confirmou a natureza do servidor C2:
+
+    Pontuação de Abuso: O IP foi sinalizado como malicioso por 10/95 fornecedores.
+
+Geolocalização: O endereço tem origem em Hong Kong, e o ISP é a Yancy Limited (um Data Center/Web Hosting). A escolha dessa localização é uma tática comum para operações de ameaça persistente avançada (APT) devido à regulamentação mais branda.
+
+Serviços Expostos: O IP está associado especificamente à gestão de malware via Cobalt Strike, confirmando que ele serve como um servidor de Comando e Controle.
+
+3. IoCs Confirmados e Próximos Passos
+
+A Fase 2 validou a ameaça externa e forneceu indicadores de bloqueio imediatos:
+
+    Domínio C2 Confirmado: army-lk.org 
+
+IP C2 Confirmado: 156.234.249.236
+
+Com o IoC de rede externo mapeado, o foco passou para a Fase 3 (Análise de Causa Raiz), para analisar o ativo interno comprometido e encontrar o executável do malware.
