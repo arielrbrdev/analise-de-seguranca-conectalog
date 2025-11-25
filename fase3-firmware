@@ -1,0 +1,39 @@
+💻 Evidências de Análise Forense (Fase 3)
+
+A análise forense foi conduzida a partir da imagem de firmware extraída do dispositivo, focando em contas locais, serviços de acesso remoto e permissões de scripts privilegiados .
+
+1. Vetor de Acesso Inicial (Acesso SSH)
+
+A inspeção dos arquivos de configuração de usuário (/etc/passwd e /etc/shadow) e dos serviços ativos revelou o provável ponto de entrada :
+
+    Conta de Manutenção (maint): O arquivo /etc/shadow revelou a conta maint configurada com a senha fraca e previsível maint .
+
+Serviço Exposto: O dispositivo utiliza o Dropbear SSHd v2017.75 como serviço de acesso remoto .
+
+Vulnerabilidade Combinada: A versão v2017.75 do Dropbear é antiga e possui um histórico de vulnerabilidades conhecidas, e sua exposição combinada com a credencial trivial (maint/maint) configura um cenário típico para acesso inicial via força bruta simples ou credential stuffing .
+
+Conclusão do Vetor Inicial: O comprometimento inicial mais provável foi o acesso remoto via serviço Dropbear SSH, utilizando a conta de manutenção com credenciais fracas.
+
+2. Vetor de Escalonamento de Privilégios (Causa Raiz)
+
+A análise de scripts administrativos identificou a vulnerabilidade que permitiu ao atacante ganhar controle total (root) do sistema :
+
+    Arquivo Crítico: O script de manutenção /usr/sbin/local/check_updates.sh .
+
+Falha de Permissão: O script possui duas características de segurança críticas :
+
+    Ele é executado com privilégios de superusuário (root).
+
+Ele permite que o usuário não privilegiado maint o modifique (permissão de escrita).
+
+Vetor de Ataque: Este é um clássico vetor de Escalonamento de Privilégios (Privilege Escalation). O atacante, após obter acesso como maint, pode editar o script e introduzir comandos maliciosos, que serão executados como root na próxima vez que o script rodar .
+
+3. Encadeamento Final do Ataque
+
+O comprometimento total do dispositivo ocorreu através da seguinte cadeia de eventos :
+
+    Acesso Inicial: SSH com autenticação maint/maint via Dropbear 2017.75.
+
+Escalação de Privilégios: Edição do script /usr/sbin/local/check_updates.sh pelo usuário maint.
+
+Controle Total: Execução posterior do script como root, concedendo ao atacante controle completo do sistema.
